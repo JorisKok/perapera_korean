@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+  "name": "Perapera Korean",
+  "version": "1.0",
+  "description": "Korean popup dictionary",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "index.js"
+      ],
+      "css": [
+        "index.css"
+      ]
+    }
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "permissions": [
+    "tabs",
+    "<all_urls>"
+  ]
+}
