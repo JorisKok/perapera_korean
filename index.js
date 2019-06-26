@@ -3,23 +3,33 @@ window.addEventListener('mousemove', mouseMove);
 // Do not try to translate the last word
 let lastWord;
 
+// Track the word under cursor
+let wordUnderCursor;
+
 let pattern = new RegExp(/^[\u3131-\uD79D]+$/ugi);
 
 function mouseMove(e) {
     const position = getPosition(e);
-    if (! isText(position)) {
+    if (!isText(position)) {
+        updateWordUnderCursor(null);
         return;
     }
 
     const text = getText(position);
     const word = getWord(text, getOffset(position));
-    if (! shouldTranslateWord(word)) {
+    updateWordUnderCursor(word);
+
+    if (!shouldTranslateWord(word)) {
         return;
     }
     lastWord = word;
 
-    getTranslation(word, {left: e.clientX, top: e.clientY});
-
+    setTimeout(function () {
+        // Only get the translation if the word under cursor is the same as 1 second ago
+        if (word === wordUnderCursor) {
+            getTranslation(word, {left: e.clientX, top: e.clientY});
+        }
+    }, 600)
 }
 
 function shouldTranslateWord(word) {
@@ -29,7 +39,7 @@ function shouldTranslateWord(word) {
     if (word === lastWord) {
         return false;
     }
-    if (! isKoreanWord(word)) {
+    if (!isKoreanWord(word)) {
         return false;
     }
 
@@ -38,7 +48,7 @@ function shouldTranslateWord(word) {
 
 function getPosition(e) {
     if (document.caretPositionFromPoint) {
-            return document.caretPositionFromPoint(e.clientX, e.clientY);
+        return document.caretPositionFromPoint(e.clientX, e.clientY);
     }
     if (document.caretRangeFromPoint) {
         return document.caretRangeFromPoint(e.clientX, e.clientY);
@@ -46,6 +56,9 @@ function getPosition(e) {
 }
 
 function isText(position) {
+    if (position.offsetNode === null) {
+        return false;
+    }
     return position.offsetNode.nodeName === '#text';
 }
 
@@ -57,66 +70,50 @@ function getOffset(position) {
     return position.offset;
 }
 
-function getElementOffset( el ) {
-    var _x = 0;
-    var _y = 0;
-    while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) {
-        _x += el.offsetLeft - el.scrollLeft;
-        _y += el.offsetTop - el.scrollTop;
-        el = el.offsetParent;
-    }
-    return { top: _y, left: _x };
-}
-
 function getWord(text, offset) {
     const words = text.split(' ');
-    let result = [];
     let length = 0;
-    for (let i = 0; i < words.length; i++){
+    for (let i = 0; i < words.length; i++) {
         length += words[i].length;
         if (length >= offset) {
             return words[i];
         }
-        length ++; // For the spaces between the words that get removed because we split on spaces
+        length++; // For the spaces between the words that get removed because we split on spaces
     }
 
     return null;
 }
 
-function getElement(position) {
-    return position.offsetNode.parentElement;
-}
-
 function getTranslation(word, position) {
-    console.log(word);
+    setLoadingText(word, position);
+
     let xhr = new XMLHttpRequest();
     // TODO change after we host it on AWS
-    xhr.open('GET', 'http://0.0.0.0:3000/words?korean=eq.' + word + '&select=korean%2Cword_translations(translation, definition)');
+    xhr.open('GET', 'http://0.0.0.0:4001/words?korean=eq.' + word + '&select=korean%2Cword_translations(translation, definition)');
 
     xhr.send(null);
     xhr.onreadystatechange = function () {
-      let DONE = 4; // readyState 4 means the request is done.
-      let OK = 200; // status 200 is a successful return.
-      if (xhr.readyState === DONE) {
-        if (xhr.status === OK) {
-          const response = JSON.parse(xhr.responseText);
-          if (response.length === 0) {
-            hidePopOver();
+        let DONE = 4; // readyState 4 means the request is done.
+        let OK = 200; // status 200 is a successful return.
+        if (xhr.readyState === DONE) {
+            if (xhr.status === OK) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.length === 0) {
+                    hidePopOver();
 
-            return;
-          }
-          const translation = response[0];
-          console.log(translation);
-          let text = [];
-          text.push(translation.korean);
-          for (let item of translation.word_translations) {
-            text.push(item.translation + " - " + item.definition);
-          }
-          setText(word, text.join("\n"), position);
-        } else {
-          console.log('Error: ' + xhr.status); // An error occurred during the request.
+                    return;
+                }
+                const translation = response[0];
+                let text = [];
+                text.push(translation.korean);
+                for (let item of translation.word_translations) {
+                    text.push(item.translation + " - " + item.definition);
+                }
+                setText(word, text.join("\n"), position);
+            } else {
+                setErrorText(word, position);
+            }
         }
-      }
     };
 }
 
@@ -125,34 +122,51 @@ function isKoreanWord(word) {
 }
 
 function getOrCreatePopOver() {
-  let div = document.getElementById('perapera-window');
-  if (div) {
+    let div = document.getElementById('perapera-window');
+    if (div) {
+        div.style.display = 'block';
+        return div;
+    }
+
+    div = document.createElement('div');
+    div.id = 'perapera-window';
+
     return div;
-  }
-
-  div = document.createElement('div');
-  div.id = 'perapera-window';
-
-  return div;
 }
 
 function hidePopOver() {
-  let div = document.getElementById('perapera-window');
-  if (div) {
-    return div.style.display = 'none';
-  }
+    let div = document.getElementById('perapera-window');
+    if (div) {
+        return div.style.display = 'none';
+    }
 }
 
 function setPopOverPosition(popover, position) {
-  popover.style.left = position.left + 'px';
-  popover.style.top = (position.top + 8) + 'px';
+    popover.style.left = position.left + 'px';
+    popover.style.top = (position.top + 8) + 'px';
 
-  return popover;
+    return popover;
 }
 
 function setText(word, text, position) {
-  let popover = setPopOverPosition(getOrCreatePopOver(), position);
-  popover.innerText = text;
-  document.body.appendChild(popover);
+    let popover = setPopOverPosition(getOrCreatePopOver(), position);
+    popover.innerText = text;
+    document.body.appendChild(popover);
+}
+
+function setLoadingText(word, position) {
+    setText(word, 'Loading...', position);
+}
+
+function setErrorText(word, position) {
+    setText(word, 'Something went wrong fetching the translation...', position);
+}
+
+function updateWordUnderCursor(word) {
+    if (wordUnderCursor !== word) {
+        hidePopOver();
+    }
+
+    wordUnderCursor = word;
 }
 
