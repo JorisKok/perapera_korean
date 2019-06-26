@@ -85,12 +85,12 @@ function getWord(text, offset) {
 }
 
 function getTranslation(word, position) {
+    console.log(word);
     setLoadingText(word, position);
 
     let xhr = new XMLHttpRequest();
     // TODO change after we host it on AWS
-    xhr.open('GET', 'http://0.0.0.0:4001/words?korean=eq.' + word + '&select=korean%2Cword_translations(translation, definition)');
-
+    xhr.open('GET', 'http://0.0.0.0:4001/words?korean=eq.' + word + '&select=korean,word_translations(translation, definition)&word_translations.order=id.asc');
     xhr.send(null);
     xhr.onreadystatechange = function () {
         let DONE = 4; // readyState 4 means the request is done.
@@ -98,6 +98,7 @@ function getTranslation(word, position) {
         if (xhr.readyState === DONE) {
             if (xhr.status === OK) {
                 const response = JSON.parse(xhr.responseText);
+                console.log(response);
                 if (response.length === 0) {
                     hidePopOver();
 
@@ -105,9 +106,10 @@ function getTranslation(word, position) {
                 }
                 const translation = response[0];
                 let text = [];
-                text.push(translation.korean);
+                text.push(translation.korean); // TODO do not show this, but the related_korean_word
                 for (let item of translation.word_translations) {
-                    text.push(item.translation + " - " + item.definition);
+                    text.push(item.translation); // TODO styling
+                    text.push(item.definition);
                 }
                 setText(word, text.join("\n"), position);
             } else {
