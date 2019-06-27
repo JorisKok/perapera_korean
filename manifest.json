@@ -3,6 +3,13 @@
   "name": "Perapera Korean",
   "version": "1.0",
   "description": "Korean popup dictionary",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png"
+  },
+  "browser_action": {
+    "default_icon": "icons/icon-48.png"
+  },
   "content_scripts": [
     {
       "matches": [
