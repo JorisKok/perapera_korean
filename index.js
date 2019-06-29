@@ -108,9 +108,17 @@ function setPopOverPosition(popover, position) {
 }
 
 function setText(word, text, position) {
+    if (selectionChanged(word)) {
+        hidePopOver();
+        return;
+    }
     let popover = setPopOverPosition(getOrCreatePopOver(), position);
     popover.innerHTML = text;
     document.body.appendChild(popover);
+}
+
+function selectionChanged(word) {
+    return word !== getSelectionText();
 }
 
 
