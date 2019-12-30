@@ -4,11 +4,11 @@
   "version": "1.0",
   "description": "Korean popup dictionary",
   "icons": {
-    "16": "icons/icon-16.png",
-    "48": "icons/icon-48.png"
+    "16": "assets/icons/icon-16.png",
+    "48": "assets/icons/icon-48.png"
   },
   "browser_action": {
-    "default_icon": "icons/icon-48.png"
+    "default_icon": "assets/icons/icon-48.png"
   },
   "content_scripts": [
     {
@@ -16,6 +16,9 @@
         "<all_urls>"
       ],
       "js": [
+        "assets/js/socket.js",
+        "assets/js/popper.min.js",
+        "assets/js/tippy-bundle.iife.min.js",
         "index.js"
       ],
       "css": [
