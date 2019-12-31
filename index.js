@@ -1,3 +1,4 @@
+let serverUrl = 'ws:localhost:4000/socket';
 let popups = [];
 let elements = [];
 
@@ -18,7 +19,7 @@ checkIfActive(checkIfActiveHandler);
 
 
 //-------------------- Websocket -----------------------//
-let socket = new Socket('ws:localhost:4000/socket', {});
+let socket = new Socket(serverUrl, {});
 socket.connect();
 
 guid = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
