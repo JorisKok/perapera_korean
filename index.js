@@ -13,9 +13,9 @@ function checkIfActive(closure) {
 }
 
 browser.runtime.onMessage.addListener(checkIfActiveHandler);
-window.onload = function () {
-  checkIfActive(checkIfActiveHandler)
-};
+
+checkIfActive(checkIfActiveHandler);
+
 
 //-------------------- Websocket -----------------------//
 let socket = new Socket('ws:localhost:4000/socket', {});
@@ -36,10 +36,7 @@ channel.join()
 
 //------------- Popup logic ----------------//
 function start() {
-  console.log("Starting");
-  for (let element of document.getElementsByTagName('P')) {
-    element.innerHTML = element.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean'>$1</span>");
-  }
+  document.body.innerHTML = document.body.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean'>$1</span>");
 
   for (let element of document.getElementsByClassName('perapera-korean')) {
     let originalColor = element.style.color;

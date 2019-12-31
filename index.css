@@ -1,5 +1,7 @@
 .perapera_korean_word {
     font-size: 1.1rem;
+    letter-spacing: 0;
+    margin-right: 0.2rem;
     font-weight: bolder;
     color: #cd6661;
     line-height: 200%;
@@ -7,11 +9,14 @@
 
 .perapera_korean_translation {
     font-size: 1.1rem;
+    margin-left: 0.2rem;
+    letter-spacing: 0;
     color: #3db9ff;
     font-weight: bolder;
 }
 
 .perapera_korean_definition {
     font-size: 1rem;
+    letter-spacing: 0;
     color: #E0E0E0;
 }
