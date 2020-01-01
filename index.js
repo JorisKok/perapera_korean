@@ -52,6 +52,8 @@ function start() {
         }
 
         channel.push('korean_to_english', {word: word}, 200).receive('ok', function (payload) {
+          destroyPopupsAndHovers();
+
           let content = '';
           for (let translations of payload.translations) {
             for (let translation of translations) {
@@ -79,6 +81,10 @@ function start() {
     };
 
     element.onmouseleave = function () {
+      destroyPopupsAndHovers();
+    };
+
+    function destroyPopupsAndHovers() {
       // Prevent text to stay black
       for (let el of elements) {
         el.style.color = originalColor;
@@ -92,7 +98,7 @@ function start() {
 
       popups = [];
       elements = [];
-    };
+    }
   }
 }
 
