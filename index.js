@@ -5,8 +5,15 @@ let elements = [];
 //------------- Talk with background.js ----------------//
 function checkIfActiveHandler(response) {
   if (response.active) {
-    start();
+    if (canStart()) {
+      start();
+    }
   }
+}
+
+function canStart() {
+  // Make sure the dom has not been edited before
+  return document.getElementsByClassName('perapera-korean').length === 0
 }
 
 function checkIfActive(closure) {
@@ -37,7 +44,7 @@ channel.join()
 
 //------------- Popup logic ----------------//
 function start() {
-  document.body.innerHTML = document.body.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean'>$1</span>");
+  document.body.innerHTML = document.body.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean' title=''>$1</span>");
 
   for (let element of document.getElementsByClassName('perapera-korean')) {
     let originalColor = element.style.color;
@@ -72,7 +79,7 @@ function start() {
           let popup = tippy(element, {
             placement: 'top-start',
             content: content,
-            interactive: true,
+            appendTo: document.body
           });
           popup.show();
           popups.push(popup);
