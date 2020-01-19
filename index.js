@@ -1,6 +1,7 @@
-let serverUrl = 'ws:localhost:4000/socket';
+let serverUrl = 'wss://insidious-dodgerblue-fairybluebird.gigalixirapp.com/socket';
 let popups = [];
 let elements = [];
+let timer;
 
 //------------- Talk with background.js ----------------//
 function checkIfActiveHandler(response) {
@@ -17,10 +18,13 @@ function canStart() {
 }
 
 function checkIfActive(closure) {
-  browser.runtime.sendMessage({method: 'checkIfActive'}).then(closure);
+  chrome.runtime.sendMessage({method: 'checkIfActive'}, closure);
 }
 
-browser.runtime.onMessage.addListener(checkIfActiveHandler);
+// chrome.runtime.onMessage.addListener(checkIfActiveHandler);
+chrome.runtime.onMessage.addListener(function (response) {
+  checkIfActive(checkIfActiveHandler);
+});
 
 checkIfActive(checkIfActiveHandler);
 
@@ -36,21 +40,38 @@ guid = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
 let channel = socket.channel(`dictionary:${guid}`, {});
 channel.join()
   .receive('ok', resp => {
-    console.log('Connected to PeraPera Korean', resp)
+    console.log('Connected to PeraPera Korean');
   })
   .receive('error', resp => {
-    console.log('Unable to connect to PeraPera Korean', resp)
+    console.log('Unable to connect to PeraPera Korean')
   });
 
 //------------- Popup logic ----------------//
 function start() {
-  document.body.innerHTML = document.body.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean' title=''>$1</span>");
+  createSpans(document.getElementsByTagName("div"));
+  createSpans(document.getElementsByTagName("p"));
+  createSpans(document.getElementsByTagName("a"));
+  createSpans(document.getElementsByTagName("li"));
+  createSpans(document.querySelectorAll("h1, h2, h3, h4, h5, h6"));
+  // document.body.innerHTML = document.body.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean' title=''>$1</span>");
 
   for (let element of document.getElementsByClassName('perapera-korean')) {
     let originalColor = element.style.color;
     let originalBackgroundColor = element.style.color;
 
     element.onmouseenter = function () {
+      // Prevent popups when moving quickly over text
+      timer = setTimeout(function () {
+        createPopup();
+      }, 80);
+    };
+
+    element.onmouseleave = function () {
+      clearTimeout(timer);
+      destroyPopupsAndHovers();
+    };
+
+    function createPopup() {
       let word = element.textContent;
 
       checkIfActive(function (response) {
@@ -58,7 +79,7 @@ function start() {
           return;
         }
 
-        channel.push('korean_to_english', {word: word}, 200).receive('ok', function (payload) {
+        channel.push('korean_to_english', {word: word}, 2000).receive('ok', function (payload) {
           destroyPopupsAndHovers();
 
           let content = '';
@@ -79,17 +100,16 @@ function start() {
           let popup = tippy(element, {
             placement: 'top-start',
             content: content,
-            appendTo: document.body
+            appendTo: document.body,
+            onHidden() {
+              destroyPopupsAndHovers();
+            }
           });
           popup.show();
           popups.push(popup);
         });
       });
-    };
-
-    element.onmouseleave = function () {
-      destroyPopupsAndHovers();
-    };
+    }
 
     function destroyPopupsAndHovers() {
       // Prevent text to stay black
@@ -109,3 +129,16 @@ function start() {
   }
 }
 
+function createSpans(elements) {
+  for (let element of elements) {
+    if (element === undefined) {
+      continue;
+    }
+
+    if (element.innerHTML.includes('perapera-korean')) {
+      continue;
+    }
+
+    element.innerHTML = element.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean' title=''>$1</span>");
+  }
+}

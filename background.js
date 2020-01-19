@@ -1,6 +1,6 @@
 let active = false;
 
-browser.browserAction.onClicked.addListener(() => {
+chrome.browserAction.onClicked.addListener(() => {
   if (active) {
     disable();
   } else {
@@ -11,19 +11,19 @@ browser.browserAction.onClicked.addListener(() => {
 function activate() {
   active = true;
 
-  browser.browserAction.setIcon({
+  chrome.browserAction.setIcon({
     path: {
       16: 'assets/icons/icon-16.png',
       48: 'assets/icons/icon-48.png',
     }
   });
 
-  browser.tabs.query({
+  chrome.tabs.query({
     currentWindow: true,
     active: true
-  }).then(function (tabs) {
+  }, function (tabs) {
     for (let tab of tabs) {
-      browser.tabs.sendMessage(
+      chrome.tabs.sendMessage(
         tab.id,
         {active: active}
       )
@@ -34,7 +34,7 @@ function activate() {
 function disable() {
   active = false;
 
-  browser.browserAction.setIcon({
+  chrome.browserAction.setIcon({
     path: {
       16: 'assets/icons/disabled-16.png',
       48: 'assets/icons/disabled-48.png',
@@ -43,7 +43,7 @@ function disable() {
 
 }
 
-function checkIfActive(request, sender, sendResponse) {
+function receiveMessage(request, sender, sendResponse) {
   switch (request['method']) {
     case 'checkIfActive':
       sendResponse({active: active});
@@ -51,4 +51,4 @@ function checkIfActive(request, sender, sendResponse) {
   }
 }
 
-browser.runtime.onMessage.addListener(checkIfActive);
+chrome.runtime.onMessage.addListener(receiveMessage);
