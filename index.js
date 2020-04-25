@@ -1,7 +1,6 @@
 let serverUrl = 'wss://insidious-dodgerblue-fairybluebird.gigalixirapp.com/socket';
 let popups = [];
-let elements = [];
-let timer;
+let lastWord;
 
 //------------- Talk with background.js ----------------//
 function checkIfActiveHandler(response) {
@@ -48,97 +47,51 @@ channel.join()
 
 //------------- Popup logic ----------------//
 function start() {
-  createSpans(document.getElementsByTagName("div"));
-  createSpans(document.getElementsByTagName("p"));
-  createSpans(document.getElementsByTagName("a"));
-  createSpans(document.getElementsByTagName("li"));
-  createSpans(document.querySelectorAll("h1, h2, h3, h4, h5, h6"));
-  // document.body.innerHTML = document.body.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean' title=''>$1</span>");
-
-  for (let element of document.getElementsByClassName('perapera-korean')) {
-    let originalColor = element.style.color;
-    let originalBackgroundColor = element.style.color;
-
-    element.onmouseenter = function () {
-      // Prevent popups when moving quickly over text
-      timer = setTimeout(function () {
-        createPopup();
-      }, 80);
-    };
-
-    element.onmouseleave = function () {
-      clearTimeout(timer);
-      destroyPopupsAndHovers();
-    };
-
-    function createPopup() {
-      let word = element.textContent;
-
-      checkIfActive(function (response) {
-        if (!response.active) {
-          return;
-        }
-
-        channel.push('korean_to_english', {word: word}, 2000).receive('ok', function (payload) {
-          destroyPopupsAndHovers();
-
-          let content = '';
-          for (let translations of payload.translations) {
-            for (let translation of translations) {
-              content += `${translation}<br>`;
-            }
-          }
-
-          if (content === '') {
-            content = 'No translation found';
-          }
-
-          elements.push(element);
-          element.style.color = 'white';
-          element.style.backgroundColor = 'black';
-
-          let popup = tippy(element, {
-            placement: 'top-start',
-            content: content,
-            appendTo: document.body,
-            onHidden() {
-              destroyPopupsAndHovers();
-            }
-          });
-          popup.show();
-          popups.push(popup);
-        });
-      });
-    }
-
-    function destroyPopupsAndHovers() {
-      // Prevent text to stay black
-      for (let el of elements) {
-        el.style.color = originalColor;
-        el.style.backgroundColor = originalBackgroundColor;
-      }
-
-      // Prevent popups to hang
+  document.addEventListener('selectionchange', () => {
+    let selection = window.getSelection();
+    let word = selection.toString();
+    if (! word) {
       for (let po of popups) {
         po.destroy();
       }
-
-      popups = [];
-      elements = [];
+      return;
     }
-  }
+
+    if (lastWord === word) {
+      return;
+    }
+
+    lastWord = word;
+
+    let span = document.createElement("span");
+    span.innerText = word;
+    selection.getRangeAt(0).deleteContents();
+    selection.getRangeAt(0).insertNode(span)
+
+    channel.push('korean_to_english', {word: word}, 2000).receive('ok', function (payload) {
+      let content = '';
+      for (let translations of payload.translations) {
+        for (let translation of translations) {
+          content += `${translation}<br>`;
+        }
+      }
+
+      if (content === '') {
+        content = 'No translation found';
+      }
+
+      let popup = tippy(span, {
+        content: content,
+        showOnCreate: true,
+        interactive: true,
+        onHide() {
+          return false;
+        },
+      });
+
+      popup.show();
+      popups.push(popup);
+    });
+  });
 }
 
-function createSpans(elements) {
-  for (let element of elements) {
-    if (element === undefined) {
-      continue;
-    }
-
-    if (element.innerHTML.includes('perapera-korean')) {
-      continue;
-    }
-
-    element.innerHTML = element.innerHTML.replace(/([\u3131-\uD79D]+)/ugi, "<span class='perapera-korean' title=''>$1</span>");
-  }
-}
