@@ -1,23 +1,32 @@
+.tippy-popper {
+    text-align: left !important;
+}
+
 .perapera {
+    all: initial;
     margin-top: 0 !important;
 }
 
 .perapera_word {
+    all: initial;
     font-weight: bolder;
     color: #cd6661;
 }
 
 .perapera_translation {
+    all: initial;
     color: #3db9ff;
     font-weight: bolder;
 }
 
 .perapera_definition {
+    all: initial;
     color: #E0E0E0;
     margin-bottom: 6px;
 }
 
 .perapera_arrow_right {
+    all: initial;
     margin-left: 6px;
     margin-right: 3px;
     cursor: pointer;
@@ -30,6 +39,7 @@
 }
 
 .perapera_arrow_left {
+    all: initial;
     margin-left: 3px;
     margin-right: 6px;
     cursor: pointer;
@@ -42,6 +52,8 @@
 }
 
 .perapera_spacer {
-    margin-left: 6px;
-    margin-right: 6px;
+    all: initial;
+    color: #E0E0E0 !important;
+    margin-left: 6px !important;
+    margin-right: 6px !important;
 }

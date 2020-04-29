@@ -1,6 +1,6 @@
-let serverUrl = 'wss://insidious-dodgerblue-fairybluebird.gigalixirapp.com/socket';
+// let serverUrl = 'wss://insidious-dodgerblue-fairybluebird.gigalixirapp.com/socket';
+let host = 'http://localhost:4000'
 let popups = [];
-let spans = [];
 let lastWord;
 let language = 'english';
 
@@ -41,11 +41,8 @@ function start() {
   document.addEventListener('selectionchange', () => {
     let selection = window.getSelection();
     let word = selection.toString();
-    console.log(selection);
-    console.log(word);
     if (!word) {
       destroyPopups();
-      destroySpans();
       lastWord = null;
       return;
     }
@@ -58,11 +55,11 @@ function start() {
 
     // Create a span around the selection
     let span = document.createElement("span");
+    span.classList.add('tippy-instance');
     selection.getRangeAt(0).surroundContents(span);
-    spans.push(span)
 
     // TODO change url
-    fetch(`http://localhost:4000/translate/${word}`)
+    fetch(`${host}/translate/${word}`)
       .then(response => {
         return response.json();
       })
@@ -82,7 +79,7 @@ function start() {
 
             if (language === 'english') {
               content += `<p class="perapera">`
-              content += `<span class="perapera_word">${word}</span>`;
+              content += `<sp누르세요an class="perapera_word">${word}</sp누르세요an>`;
               content += `<span class="perapera_spacer">-</span>`
               content += `<span class="perapera_translation">${sanitize(item.translation)}</span></br>`;
               if (item.definition) {
@@ -102,8 +99,10 @@ function start() {
             return false;
           },
           onDestroy() {
+            removeSpans()
             return false;
-          }
+          },
+          appendTo: document.body,
         });
 
         p.show();
@@ -118,14 +117,20 @@ function destroyPopups() {
   }
 }
 
-function destroySpans() {
-  for (let span of spans) {
-    span.destroy();
-  }
-}
-
 function sanitize(input) {
   let tmp = document.createElement('div');
   tmp.textContent = input;
   return tmp.innerHTML;
+}
+
+function removeSpans() {
+  let spans = document.getElementsByClassName('tippy-instance');
+
+  while (spans.length) {
+    let parent = spans[0].parentNode;
+    while (spans[0].firstChild) {
+      parent.insertBefore(spans[0].firstChild, spans[0]);
+    }
+    parent.removeChild(spans[0]);
+  }
 }
