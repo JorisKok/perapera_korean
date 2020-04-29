@@ -1,22 +1,47 @@
-.perapera_korean_word {
-    font-size: 1.1rem;
-    letter-spacing: 0;
-    margin-right: 0.2rem;
-    font-weight: bolder;
-    color: #cd6661;
-    line-height: 200%;
+.perapera {
+    margin-top: 0 !important;
 }
 
-.perapera_korean_translation {
-    font-size: 1.1rem;
-    margin-left: 0.2rem;
-    letter-spacing: 0;
+.perapera_word {
+    font-weight: bolder;
+    color: #cd6661;
+}
+
+.perapera_translation {
     color: #3db9ff;
     font-weight: bolder;
 }
 
-.perapera_korean_definition {
-    font-size: 1rem;
-    letter-spacing: 0;
+.perapera_definition {
     color: #E0E0E0;
+    margin-bottom: 6px;
+}
+
+.perapera_arrow_right {
+    margin-left: 6px;
+    margin-right: 3px;
+    cursor: pointer;
+    border: solid rgb(252, 167, 234);
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.perapera_arrow_left {
+    margin-left: 3px;
+    margin-right: 6px;
+    cursor: pointer;
+    border: solid rgb(252, 167, 234);
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.perapera_spacer {
+    margin-left: 6px;
+    margin-right: 6px;
 }
