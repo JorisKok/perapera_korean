@@ -2,6 +2,11 @@
     text-align: left !important;
 }
 
+.tippy-content {
+    letter-spacing: 0;
+    color: #fff !important;
+}
+
 .perapera {
     all: initial;
     margin-top: 0 !important;

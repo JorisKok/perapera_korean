@@ -1,5 +1,5 @@
-// let serverUrl = 'wss://insidious-dodgerblue-fairybluebird.gigalixirapp.com/socket';
-let host = 'http://localhost:4000'
+let host = 'https://pungent-ideal-beardedcollie.gigalixirapp.com/'
+let timeout;
 let popups = [];
 let lastWord;
 let language = 'english';
@@ -42,72 +42,79 @@ function start() {
     let selection = window.getSelection();
     let word = selection.toString();
     if (!word) {
-      destroyPopups();
       lastWord = null;
       return;
     }
 
-    if (lastWord === word) {
-      return;
+    // Prevent many popups when we select by dragging
+    if (timeout) {
+      clearTimeout(timeout);
+      destroyPopups();
     }
 
-    lastWord = word;
+    timeout = setTimeout(() => {
+      if (lastWord === word) {
+        return;
+      }
 
-    // Create a span around the selection
-    let span = document.createElement("span");
-    span.classList.add('tippy-instance');
-    selection.getRangeAt(0).surroundContents(span);
+      lastWord = word;
 
-    // TODO change url
-    fetch(`${host}/translate/${word}`)
-      .then(response => {
-        return response.json();
-      })
-      .then(translations => {
-        destroyPopups();
+      // Create a span around the selection
+      let span = document.createElement("span");
+      span.classList.add('tippy-instance');
+      span.tabIndex = 0;
+      selection.getRangeAt(0).surroundContents(span);
 
-        let content = '';
-        for (let translation of translations) {
-          let word = translation['word'];
-          for (let item of translation[language]) {
-            if (language === 'korean') {
-              content += `<p class="perapera">`
-              content += `<span class="perapera_word">${word}</span><br/>`;
-              content += `<span class="perapera_definition">${sanitize(item.translation)}</span></br>`;
-              content += `</p>`
-            }
+      fetch(`${host}/translate/${word}`)
+        .then(response => {
+          return response.json();
+        })
+        .then(translations => {
+          destroyPopups();
 
-            if (language === 'english') {
-              content += `<p class="perapera">`
-              content += `<sp누르세요an class="perapera_word">${word}</sp누르세요an>`;
-              content += `<span class="perapera_spacer">-</span>`
-              content += `<span class="perapera_translation">${sanitize(item.translation)}</span></br>`;
-              if (item.definition) {
-                content += `<span class="perapera_definition">${sanitize(item.definition)}</span></br>`;
+          let content = '';
+          for (let translation of translations) {
+            let word = translation['word'];
+            for (let item of translation[language]) {
+              if (language === 'korean') {
+                content += `<p class="perapera">`
+                content += `<span class="perapera_word">${word}</span><br/>`;
+                content += `<span class="perapera_definition">${sanitize(item.translation)}</span></br>`;
+                content += `</p>`
               }
-              content += `</p>`
+
+              if (language === 'english') {
+                content += `<p class="perapera">`
+                content += `<sp누르세요an class="perapera_word">${word}</sp누르세요an>`;
+                content += `<span class="perapera_spacer">-</span>`
+                content += `<span class="perapera_translation">${sanitize(item.translation)}</span></br>`;
+                if (item.definition) {
+                  content += `<span class="perapera_definition">${sanitize(item.definition)}</span></br>`;
+                }
+                content += `</p>`
+              }
             }
           }
-        }
 
-        let p = tippy(span, {
-          content: content ? content : 'No translation found',
-          showOnCreate: true,
-          interactive: true,
-          allowHTML: true,
-          onHide() {
-            return false;
-          },
-          onDestroy() {
-            removeSpans()
-            return false;
-          },
-          appendTo: document.body,
+          let p = tippy(span, {
+            content: content ? content : 'No translation found',
+            showOnCreate: true,
+            interactive: true,
+            allowHTML: true,
+            onHide() {
+              return false;
+            },
+            onDestroy() {
+              removeSpans()
+              return false;
+            },
+            appendTo: document.body,
+          });
+
+          p.show();
+          popups.push(p);
         });
-
-        p.show();
-        popups.push(p);
-      });
+    }, 200);
   });
 }
 

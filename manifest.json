@@ -1,17 +1,11 @@
 {
   "manifest_version": 2,
   "name": "Perapera Korean",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Korean popup dictionary",
   "icons": {
     "16": "assets/icons/icon-16.png",
     "48": "assets/icons/icon-48.png"
-  },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "joris.kok@hotmail.com",
-      "strict_min_version": "57.0a1"
-    }
   },
   "browser_action": {
     "default_icon": "assets/icons/disabled-48.png"
@@ -23,7 +17,7 @@
       ],
       "js": [
         "assets/js/popper.min.js",
-        "assets/js/tippy-bundle.iife.min.js",
+        "assets/js/tippy-bundle.umd.min.js",
         "index.js"
       ],
       "css": [
