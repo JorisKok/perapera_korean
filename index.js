@@ -85,7 +85,7 @@ function start() {
 
               if (language === 'english') {
                 content += `<p class="perapera">`
-                content += `<sp누르세요an class="perapera_word">${word}</sp누르세요an>`;
+                content += `<span class="perapera_word">${word}</span>`;
                 content += `<span class="perapera_spacer">-</span>`
                 content += `<span class="perapera_translation">${sanitize(item.translation)}</span></br>`;
                 if (item.definition) {
