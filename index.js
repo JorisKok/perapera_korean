@@ -38,6 +38,11 @@ browser.storage.sync.get('language').then(res => {
 
 // ------------------- Popup logic --------------------- //
 function start() {
+  // It's not interactive, so we just remove it on click
+  document.addEventListener('click', (event) => {
+      destroyPopups();
+  });
+
   document.addEventListener('selectionchange', () => {
     let selection = window.getSelection();
     let word = selection.toString();
@@ -99,7 +104,6 @@ function start() {
           let p = tippy(span, {
             content: content ? content : 'No translation found',
             showOnCreate: true,
-            interactive: true,
             allowHTML: true,
             onHide() {
               return false;
