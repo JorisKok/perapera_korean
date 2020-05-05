@@ -40,14 +40,16 @@ browser.storage.sync.get('language').then(res => {
 function start() {
   // It's not interactive, so we just remove it on click
   document.addEventListener('click', (event) => {
-      destroyPopups();
+    destroyPopups();
   });
 
   document.addEventListener('selectionchange', () => {
-    let selection = window.getSelection();
-    let word = selection.toString();
+    let word = window.getSelection().toString();
     if (!word) {
-      lastWord = null;
+      return;
+    }
+
+    if (lastWord === word) {
       return;
     }
 
@@ -58,37 +60,38 @@ function start() {
     }
 
     timeout = setTimeout(() => {
-      if (lastWord === word) {
-        return;
-      }
-
       lastWord = word;
-
-      // Create a span around the selection
-      let span = document.createElement("span");
-      span.classList.add('tippy-instance');
-      span.tabIndex = 0;
-      selection.getRangeAt(0).surroundContents(span);
 
       fetch(`${host}/translate/${word}`)
         .then(response => {
           return response.json();
         })
         .then(translations => {
+
           destroyPopups();
+
+          console.log(translations);
+          // Create a span around the selection
+          let span = document.createElement("span");
+          span.classList.add('tippy-instance');
+          span.tabIndex = 0;
+          window.getSelection().getRangeAt(0).surroundContents(span);
+
 
           let content = '';
           for (let translation of translations) {
             let word = translation['word'];
-            for (let item of translation[language]) {
-              if (language === 'korean') {
-                content += `<p class="perapera">`
-                content += `<span class="perapera_word">${word}</span><br/>`;
-                content += `<span class="perapera_definition">${sanitize(item.translation)}</span></br>`;
-                content += `</p>`
-              }
+            if (translation[language] !== undefined) {
+              for (let item of translation[language]) {
+                if (language === 'korean') {
+                  content += `<p class="perapera">`
+                  content += `<span class="perapera_word">${word}</span><br/>`;
+                  content += `<span class="perapera_definition">${sanitize(item.translation)}</span></br>`;
+                  content += `</p>`
 
-              if (language === 'english') {
+                  continue;
+                }
+
                 content += `<p class="perapera">`
                 content += `<span class="perapera_word">${word}</span>`;
                 content += `<span class="perapera_spacer">-</span>`
@@ -103,6 +106,7 @@ function start() {
 
           let p = tippy(span, {
             content: content ? content : 'No translation found',
+            placement: 'auto',
             showOnCreate: true,
             allowHTML: true,
             onHide() {
@@ -118,7 +122,7 @@ function start() {
           p.show();
           popups.push(p);
         });
-    }, 200);
+    }, 400);
   });
 }
 
